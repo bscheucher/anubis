@@ -5,21 +5,27 @@ import com.ibosng.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
 import java.util.Map;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
+@AutoConfigureWireMock(port = 0)
+@TestPropertySource(properties = {
+        "tnDocumentNatifEndpoint=http://localhost:${wiremock.server.port}",
+        "tnDocumentNatifApiKey=test-api-key"
+})
 public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
 
     @Autowired
@@ -32,13 +38,18 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(username = "testuser")
-    void uploadFile_withFile_returnsStartAndEndDates() throws Exception {
+    void uploadFile_withFile_returnsExternalApiResponse() throws Exception {
+        String natifResponse = "{\"extractions\":[{\"field\":\"date\",\"value\":\"2026-01-15\"}]}";
+
+        stubFor(post(urlPathEqualTo("/"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(natifResponse)));
+
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "pdf-content".getBytes()
         );
-
-        LocalDate today = LocalDate.now();
-        LocalDate oneWeekLater = today.plusWeeks(1);
 
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(file)
@@ -46,29 +57,34 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
                         .param("identifier", "12345")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.start").value(today.toString()))
-                .andExpect(jsonPath("$.end").value(oneWeekLater.toString()));
+                .andExpect(content().string(natifResponse));
     }
 
     @Test
     @WithMockUser(username = "testuser")
-    void uploadFile_withoutFile_returnsStartAndEndDates() throws Exception {
-        LocalDate today = LocalDate.now();
-        LocalDate oneWeekLater = today.plusWeeks(1);
+    void uploadFile_withEmptyFile_returnsBadRequest() throws Exception {
+        MockMultipartFile emptyFile = new MockMultipartFile(
+                "file", "empty.pdf", MediaType.APPLICATION_PDF_VALUE, new byte[0]
+        );
 
         mockMvc.perform(multipart("/tn-document/upload")
+                        .file(emptyFile)
                         .param("type", "absence")
                         .param("identifier", "12345")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.start").value(today.toString()))
-                .andExpect(jsonPath("$.end").value(oneWeekLater.toString()));
+                        .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("File must not be empty"));
     }
 
     @Test
     @WithMockUser(username = "testuser")
     void uploadFile_missingTypeParam_returnsBadRequest() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "pdf-content".getBytes()
+        );
+
         mockMvc.perform(multipart("/tn-document/upload")
+                        .file(file)
                         .param("identifier", "12345")
                         .with(csrf()))
                 .andExpect(status().isBadRequest());
@@ -77,10 +93,35 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
     @Test
     @WithMockUser(username = "testuser")
     void uploadFile_missingIdentifierParam_returnsBadRequest() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "pdf-content".getBytes()
+        );
+
         mockMvc.perform(multipart("/tn-document/upload")
+                        .file(file)
                         .param("type", "absence")
                         .with(csrf()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void uploadFile_externalApiError_returnsErrorStatus() throws Exception {
+        stubFor(post(urlPathEqualTo("/"))
+                .willReturn(aResponse()
+                        .withStatus(502)
+                        .withBody("{\"error\":\"Bad Gateway\"}")));
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "pdf-content".getBytes()
+        );
+
+        mockMvc.perform(multipart("/tn-document/upload")
+                        .file(file)
+                        .param("type", "absence")
+                        .param("identifier", "12345")
+                        .with(csrf()))
+                .andExpect(status().is(502));
     }
 
     // --- /tn-document/confirm tests ---
