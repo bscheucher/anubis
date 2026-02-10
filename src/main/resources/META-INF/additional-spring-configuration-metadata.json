@@ -1,0 +1,86 @@
+{
+  "properties": [
+    {
+      "name": "redisSslEnabled",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "azureRedisPassword",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "azureOpenAIKey",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "azureOpenAIEndPoint",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.postgresql.image",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.postgresql.username",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.postgresql.password",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.postgresql.database",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.postgresql.applyDbDump",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "testcontainers.postgresql.dbDumpPath",
+      "type": "java.lang.String",
+      "description": "Path relative to project root to a .gz file. 'testcontainers.postgresql.applyDbDump' must be set to 'true' for this property to be applied."
+    },
+    {
+      "name": "testcontainers.mariadb.image",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.mariadb.username",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.mariadb.password",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.mariadb.database",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.mariadb.applyDbDump",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "name": "testcontainers.mariadb.dbDumpPath",
+      "type": "java.lang.String",
+      "description": "Path relative to project root to a .gz file. 'testcontainers.mariadb.applyDbDump' must be set to 'true' for this property to be applied."
+    },
+    {
+      "name": "testcontainers.redis.port",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.redis.host",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.redis.password",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "testcontainers.redis.image",
+      "type": "java.lang.String"
+    }
+  ]
+}

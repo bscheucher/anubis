@@ -1,0 +1,17 @@
+parameters:
+  - name: testRunTitle
+    type: string
+
+steps:
+
+- task: Gradle@3
+  displayName: 'Run Gradle Build'
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
+    jdkArchitectureOption: 'x64'
+    tasks: 'clean build'
+    publishJUnitResults: true
+    testResultsFiles: '**/build/test-results/test/*.xml'
+    testRunTitle: '${{ parameters.testRunTitle }}'

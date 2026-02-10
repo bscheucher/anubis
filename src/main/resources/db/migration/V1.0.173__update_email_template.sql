@@ -1,0 +1,1 @@
+update email_template set identifier = 'gateway-service.tn-anabweseneheit.anabweseneheit-transfer-error' where identifier = 'gateway-service.tn-anabweseneheit.transfer-error';

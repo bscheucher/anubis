@@ -1,0 +1,92 @@
+<fontFamilies>
+
+    <fontFamily name="Trebuchet MS">
+        <normal><![CDATA[fonts/Trebuchet MS.ttf]]></normal>
+        <bold><![CDATA[fonts/Trebuchet MS bold.ttf]]></bold>
+        <italic><![CDATA[fonts/Trebuchet MS italic.ttf]]></italic>
+        <boldItalic><![CDATA[fonts/Trebuchet MS bold italic.ttf]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Bookman Old Style">
+        <normal><![CDATA[fonts/Bookman Old Style Regular.ttf]]></normal>
+        <bold><![CDATA[fonts/Bookman Old Style Bold.ttf]]></bold>
+        <italic><![CDATA[fonts/Bookman Old Style Italic.ttf]]></italic>
+        <boldItalic><![CDATA[fonts/Bookman Old Style Bold Italic.ttf]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Lucida Handwriting">
+        <normal><![CDATA[fonts/LHANDW.TTF]]></normal>
+        <italic><![CDATA[fonts/Lucida Handwriting Italic.ttf]]></italic>
+        <bold><![CDATA[fonts/lucida-handwriting-std-bold.TTF]]></bold>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Lucida Handwriting new">
+        <normal><![CDATA[fonts/LHANDW.TTF]]></normal>
+        <italic><![CDATA[fonts/Lucida Handwriting Italic.ttf]]></italic>
+        <bold><![CDATA[fonts/lucida-handwriting-std-bold.TTF]]></bold>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Aptos">
+        <normal><![CDATA[fonts/aptos.ttf]]></normal>
+        <bold><![CDATA[fonts/aptos-bold.ttf]]></bold>
+        <italic><![CDATA[fonts/aptos-italic.ttf]]></italic>
+        <boldItalic><![CDATA[fonts/aptos-extrabold-italic.ttf]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Aptos Black">
+        <normal><![CDATA[fonts/aptos-black.ttf]]></normal>
+        <italic><![CDATA[fonts/aptos-black-italic.ttf]]></italic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Aptos ExtraBold">
+        <normal><![CDATA[fonts/aptos-extrabold.ttf]]></normal>
+        <italic><![CDATA[fonts/aptos-extrabold-italic.ttf]]></italic>
+        <boldItalic><![CDATA[fonts/aptos-extrabold-italic-2.ttf]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Aptos Light">
+        <normal><![CDATA[fonts/aptos-light.ttf]]></normal>
+        <italic><![CDATA[fonts/aptos-light-italic.ttf]]></italic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Aptos SemiBold">
+        <normal><![CDATA[fonts/aptos-semibold.ttf]]></normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Calibri">
+        <normal><![CDATA[fonts/calibri-regular.ttf]]></normal>
+        <bold><![CDATA[fonts/calibri-bold.ttf]]></bold>
+        <italic><![CDATA[fonts/calibri-italic.ttf]]></italic>
+        <boldItalic><![CDATA[fonts/calibri-bold-italic.ttf]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="Webdings">
+        <normal><![CDATA[fonts/webdings.ttf]]></normal>
+        <bold><![CDATA[fonts/webdings.ttf]]></bold>
+        <italic><![CDATA[fonts/webdings.ttf]]></italic>
+        <boldItalic><![CDATA[fonts/webdings.ttf]]></boldItalic>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <isPdfEmbedded>true</isPdfEmbedded>
+    </fontFamily>
+
+</fontFamilies>

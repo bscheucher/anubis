@@ -1,0 +1,26 @@
+{
+  "constituent": {
+    "classifier": "UPN",
+    "name": "test@msg-plaut.hu",
+    "@class": "com.xitrust.moxispe.api.User"
+  },
+  "positionType": "SIGNATURE_PAGE",
+  "metaData": {
+    "description": "Test Job Description",
+    "referenceId": "referenceId"
+  },
+  "iterationData": [
+    {
+      "invitees": [
+        {
+          "@class": "com.xitrust.moxispe.api.User",
+          "classifier": "UPN",
+          "name": "test@msg-plaut.hu",
+          "roleName": "moxisSigner"
+        }
+      ],
+      "category": "QSIG",
+      "iterationNumber": 0
+    }
+  ]
+}

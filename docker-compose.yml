@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16.9
+    container_name: ibosng
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mySecret
+      POSTGRES_DB: ibosng
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./misc/postgres/init:/docker-entrypoint-initdb.d
+
+  mariadb:
+    image: mariadb:11.4
+    container_name: mariadb_local
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_USER: ibos                  # custom non-root user
+      MARIADB_PASSWORD: ibos              # password for the user
+      MARIADB_DATABASE: ibos                # default database to create
+    ports:
+      - "3306:3306"                          # host:container
+    volumes:
+      - mariadb_data:/var/lib/mysql          # persistent storage
+      - ./misc/mariadb/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mariadb_network
+
+  redis:
+    image: redis:6.0
+    container_name: redis_local
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: [ "redis-server", "--save", "", "--appendonly", "no" ] # lightweight for dev
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0"
+    ports:
+      - "10000:10000"  # blob
+      - "10001:10001"  # queue
+      - "10002:10002"  # table
+
+
+volumes:
+  postgres_data:
+  mariadb_data:
+  redis_data:
+
+
+networks:
+  mariadb_network:
+    driver: bridge

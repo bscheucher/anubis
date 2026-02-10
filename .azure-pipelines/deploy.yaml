@@ -1,0 +1,161 @@
+# 1) User selects the target environment in the UI
+parameters:
+- name: environment
+  displayName: Target environment
+  type: string
+  default: test
+  values:
+  - test
+  - qa
+  - shadow-prod
+
+- name: imageTag
+  displayName: Image tag to deploy
+  type: string
+  default: latest
+
+# 2) Variables derived from the selected environment
+variables:
+  - name: IMAGE_SHORT_NAME
+    value: $(Build.Repository.Name)
+
+  # Manifests folder depends on environment (see suffix)
+  - name: MANIFESTS_PATH
+    value: '$(Build.SourcesDirectory)/kubernetes/manifests/${{ parameters.environment }}'
+
+  # TEST
+  - ${{ if eq(parameters.environment, 'test') }}:
+    - name: AZURE_SUBSCRIPTION_ENDPOINT
+      value: sp-ibosng-pipelines-dev
+    - name: ADO_ENVIRONMENT
+      value: 'dev-aks'
+    - name: AZURE_RESOURCE_GROUP
+      value: rg-ibosng-test-westeu
+    - name: CONTAINER_REGISTRY_SHORT_NAME
+      value: ibosngcontainerregistry
+    - name: KUBERNETES_CLUSTER
+      value: ibosNGAKSTest
+    - name: K8S_NAMESPACE
+      value: ibosng-test
+
+  # QA
+  - ${{ if eq(parameters.environment, 'qa') }}:
+    - name: AZURE_SUBSCRIPTION_ENDPOINT
+      value: sp-ibosng-pipelines-dev
+    - name: ADO_ENVIRONMENT
+      value: 'dev-aks'
+    - name: AZURE_RESOURCE_GROUP
+      value: qa-rg-ibosng-westeu
+    - name: CONTAINER_REGISTRY_SHORT_NAME
+      value: ibosngcontainerregistry
+    - name: KUBERNETES_CLUSTER
+      value: qa-aks-ibosng
+    - name: K8S_NAMESPACE
+      value: ibosng-qa
+
+  # SHADOW-PROD (old PROD)
+  - ${{ if eq(parameters.environment, 'shadow-prod') }}:
+    - name: AZURE_SUBSCRIPTION_ENDPOINT
+      value: sp-ibosng
+    - name: ADO_ENVIRONMENT
+      value: 'shadow-prod'
+    - name: AZURE_RESOURCE_GROUP
+      value: rg-ibosng-prod-westeu
+    - name: CONTAINER_REGISTRY_SHORT_NAME
+      value: ibosngcontainerregistryprod
+    - name: KUBERNETES_CLUSTER
+      value: ibosNGAKSProd
+    - name: K8S_NAMESPACE
+      value: backend
+
+  - name: CONTAINER_REGISTRY_FULL_NAME
+    value: $(CONTAINER_REGISTRY_SHORT_NAME).azurecr.io
+
+  - name: IMAGE_FULL_NAME
+    value: $(CONTAINER_REGISTRY_FULL_NAME)/$(IMAGE_SHORT_NAME):${{ parameters.imageTag }}
+
+name: $(Build.Repository.Name)_${{ parameters.environment }}_deploy__ImageTag_${{ parameters.imageTag }}__$(Date:yyyy-MM-dd_HH.mm.ss)
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-24.04'
+
+stages:
+  - stage: Deploy
+    displayName: Deploy on AKS
+    jobs:
+      - deployment: DeployToAKS
+        displayName: Deploy Kubernetes Manifests
+
+        # Uses the per-env Azure DevOps "environment" (for approvals/checks)
+        environment: '$(ADO_ENVIRONMENT)'
+
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: KubeloginInstaller@0
+                  displayName: 'Install kubelogin'
+                  inputs:
+                    kubeloginVersion: 'latest'
+
+                # 1) Apply the manifests (deployment, svc, configmap, ...)
+                - task: Kubernetes@1
+                  displayName: 'kubectl apply'
+                  inputs:
+                    connectionType: 'Azure Resource Manager'
+                    azureSubscriptionEndpoint: $(AZURE_SUBSCRIPTION_ENDPOINT)
+                    azureResourceGroup: $(AZURE_RESOURCE_GROUP)
+                    kubernetesCluster: $(KUBERNETES_CLUSTER)
+                    useClusterAdmin: false  # Uses Azure RBAC
+                    command: 'apply'
+                    arguments: >
+                      -f $(MANIFESTS_PATH)
+                      --recursive
+                      --namespace=$(K8S_NAMESPACE)
+                
+                # 2) Override the image for this deployment
+                - task: Kubernetes@1
+                  displayName: 'kubectl set image'
+                  inputs:
+                    connectionType: 'Azure Resource Manager'
+                    azureSubscriptionEndpoint: $(AZURE_SUBSCRIPTION_ENDPOINT)
+                    azureResourceGroup: $(AZURE_RESOURCE_GROUP)
+                    kubernetesCluster: $(KUBERNETES_CLUSTER)
+                    useClusterAdmin: false
+                    command: 'set'
+                    arguments: >
+                      image deployment/$(IMAGE_SHORT_NAME)
+                      $(IMAGE_SHORT_NAME)=$(IMAGE_FULL_NAME)
+                      --namespace=$(K8S_NAMESPACE)
+
+                # 3) Tag the images with the environment alias indicating that this image is in use
+                - task: AzureCLI@2
+                  displayName: 'Tag deployed image in ACR with environment alias'
+                  inputs:
+                    azureSubscription: $(AZURE_SUBSCRIPTION_ENDPOINT)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      set -e
+
+                      echo "Tagging deployed image in Azure Container Registry (server-side)..."
+
+                      echo "Registry:       $(CONTAINER_REGISTRY_SHORT_NAME)"
+                      echo "Source image:   $(IMAGE_FULL_NAME)"
+                      echo "Target tag:     ${{ parameters.environment }}"
+
+                      az acr import \
+                        --name $(CONTAINER_REGISTRY_SHORT_NAME) \
+                        --source $(IMAGE_FULL_NAME) \
+                        --image $(IMAGE_SHORT_NAME):env-${{ parameters.environment }} \
+                        --force
+
+                      echo "Successfully tagged $(IMAGE_SHORT_NAME):env-${{ parameters.environment }}"
+                  env:
+                    CONTAINER_REGISTRY_SHORT_NAME: $(CONTAINER_REGISTRY_SHORT_NAME)
+                    IMAGE_FULL_NAME: $(IMAGE_FULL_NAME)
+                    IMAGE_SHORT_NAME: $(IMAGE_SHORT_NAME)

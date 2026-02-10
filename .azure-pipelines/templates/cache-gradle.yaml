@@ -1,0 +1,17 @@
+parameters:
+  - name: agentOs
+    type: string
+    default: '$(Agent.OS)'
+
+steps:
+  - task: Cache@2
+    displayName: "Cache Gradle Wrapper"
+    inputs:
+      key: 'gradle-wrapper | ${{ parameters.agentOs }} | **/gradle-wrapper.properties'
+      path: '$(HOME)/.gradle/wrapper'
+
+  - task: Cache@2
+    displayName: "Cache Gradle Dependencies"
+    inputs:
+      key: 'gradle-dependencies | ${{ parameters.agentOs }} | build.gradle.kts'
+      path: '$(HOME)/.gradle/caches/modules-2'

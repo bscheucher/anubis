@@ -1,0 +1,105 @@
+# 1) User selects the target environment in the UI
+parameters:
+- name: environment
+  displayName: Target environment
+  type: string
+  default: test
+  values:
+  - test
+  - qa
+  - shadow-prod
+
+# 2) Variables derived from the selected environment
+variables:
+  - name: IMAGE_SHORT_NAME
+    value: $(Build.Repository.Name)
+
+  # Manifests folder depends on environment (see suffix)
+  - name: MANIFESTS_PATH
+    value: '$(Build.SourcesDirectory)/kubernetes/manifests/${{ parameters.environment }}'
+
+  # TEST
+  - ${{ if eq(parameters.environment, 'test') }}:
+    - name: AZURE_SUBSCRIPTION_ENDPOINT
+      value: sp-ibosng-pipelines-dev
+    - name: ADO_ENVIRONMENT
+      value: 'dev-aks'
+    - name: AZURE_RESOURCE_GROUP
+      value: rg-ibosng-test-westeu
+    - name: CONTAINER_REGISTRY_SHORT_NAME
+      value: ibosngcontainerregistry
+    - name: KUBERNETES_CLUSTER
+      value: ibosNGAKSTest
+    - name: K8S_NAMESPACE
+      value: ibosng-test
+
+  # QA
+  - ${{ if eq(parameters.environment, 'qa') }}:
+    - name: AZURE_SUBSCRIPTION_ENDPOINT
+      value: sp-ibosng-pipelines-dev
+    - name: ADO_ENVIRONMENT
+      value: 'dev-aks'
+    - name: AZURE_RESOURCE_GROUP
+      value: qa-rg-ibosng-westeu
+    - name: CONTAINER_REGISTRY_SHORT_NAME
+      value: ibosngcontainerregistry
+    - name: KUBERNETES_CLUSTER
+      value: qa-aks-ibosng
+    - name: K8S_NAMESPACE
+      value: ibosng-qa
+
+  # SHADOW-PROD (old PROD)
+  - ${{ if eq(parameters.environment, 'shadow-prod') }}:
+    - name: AZURE_SUBSCRIPTION_ENDPOINT
+      value: sp-ibosng
+    - name: ADO_ENVIRONMENT
+      value: 'shadow-prod'
+    - name: AZURE_RESOURCE_GROUP
+      value: rg-ibosng-prod-westeu
+    - name: CONTAINER_REGISTRY_SHORT_NAME
+      value: ibosngcontainerregistryprod
+    - name: KUBERNETES_CLUSTER
+      value: ibosNGAKSProd
+    - name: K8S_NAMESPACE
+      value: backend
+
+name: $(Build.Repository.Name)_${{ parameters.environment }}_restart__$(Date:yyyy-MM-dd_HH.mm.ss)
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-24.04'
+
+stages:
+  - stage: Restart
+    displayName: Restart on AKS
+    jobs:
+      - deployment: RestartOnAKS
+        displayName: Restart existing deployment (rollout restart)
+
+        # Uses the per-env Azure DevOps "environment" for approvals/checks
+        environment: '$(ADO_ENVIRONMENT)'
+
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: KubeloginInstaller@0
+                  displayName: 'Install kubelogin'
+                  inputs:
+                    kubeloginVersion: 'latest'
+
+                - task: Kubernetes@1
+                  displayName: 'kubectl rollout restart'
+                  inputs:
+                    connectionType: 'Azure Resource Manager'
+                    azureSubscriptionEndpoint: $(AZURE_SUBSCRIPTION_ENDPOINT)
+                    azureResourceGroup: $(AZURE_RESOURCE_GROUP)
+                    kubernetesCluster: $(KUBERNETES_CLUSTER)
+                    useClusterAdmin: false
+                    command: 'rollout'
+                    arguments: >
+                      restart deployment/$(IMAGE_SHORT_NAME)
+                      --namespace=$(K8S_NAMESPACE)

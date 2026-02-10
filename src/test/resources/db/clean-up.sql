@@ -1,0 +1,4 @@
+TRUNCATE TABLE lhr_outbox;
+TRUNCATE TABLE abwesenheit CASCADE;
+TRUNCATE TABLE personalnummer CASCADE;
+TRUNCATE TABLE ibis_firma CASCADE;

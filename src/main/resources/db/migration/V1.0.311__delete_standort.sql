@@ -1,0 +1,1 @@
+delete from dienstort where name = 'Bludenz (Untersteinstraße 8)';

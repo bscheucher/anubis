@@ -1,0 +1,1 @@
+update email_template set identifier = 'gateway-service.tn-austritt-transfer-success' where subject = 'TN tritt aus';

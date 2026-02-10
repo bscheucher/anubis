@@ -1,0 +1,139 @@
+parameters:
+- name: environment
+  displayName: Target environment
+  type: string
+  default: test
+  values:
+  - test
+  - shadow-prod
+  
+variables:
+  - name: IMAGE_SHORT_NAME
+    value: $(Build.Repository.Name)
+
+  - ${{ if eq(parameters.environment, 'test') }}:
+    - name: SERVICE_CONNECTION
+      value: sp-ibosng-pipelines-dev
+    - name: CONTAINER_REGISTRY
+      value: ibosngcontainerregistry.azurecr.io
+    - name: ADO_ENVIRONMENT
+      value: 'dev-aks'
+
+  - ${{ if eq(parameters.environment, 'qa') }}:
+    - name: SERVICE_CONNECTION
+      value: sp-ibosng-pipelines-dev
+    - name: CONTAINER_REGISTRY
+      value: ibosngcontainerregistry.azurecr.io
+    - name: ADO_ENVIRONMENT
+      value: 'dev-aks'
+
+  - ${{ if eq(parameters.environment, 'shadow-prod') }}:
+    - name: SERVICE_CONNECTION
+      value: sp-ibosng
+    - name: CONTAINER_REGISTRY
+      value: ibosngcontainerregistryprod.azurecr.io
+    - name: ADO_ENVIRONMENT
+      value: 'shadow-prod'
+
+  - name: IMAGE_FULL_NAME
+    value: $(CONTAINER_REGISTRY)/$(IMAGE_SHORT_NAME)
+
+name: $(Build.Repository.Name)_${{ parameters.environment }}__Build_$(Build.BuildId)__$(Date:yyyy-MM-dd_HH.mm.ss)
+
+trigger: none
+
+# ─────────────────────────
+# Stage 1: Build & publish image artifact (no environment → no approvals)
+# ─────────────────────────
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: build_image
+    displayName: Build Docker image
+    pool:
+      vmImage: 'ubuntu-24.04'
+    steps:
+    - template: templates/install-java.yaml
+
+    - template: templates/cache-gradle.yaml
+      parameters:
+        agentOs: $(Agent.OS)
+
+    - template: templates/gradle-build.yaml
+      parameters:
+        testRunTitle: '$(IMAGE_SHORT_NAME) - Build Image Only'
+
+    - template: templates/publish-code-coverage.yaml
+
+    - task: Docker@1
+      displayName: 'Build Docker Image'
+      inputs:
+        imageName: '$(IMAGE_FULL_NAME):$(Build.BuildId)'
+        command: 'build'
+        buildContext: '.'
+        Dockerfile: './Dockerfile'
+        includeLatestTag: true   # optional; can be removed
+
+    # Save built image as a tarball and publish as pipeline artifact
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)
+        echo "Saving image $(IMAGE_FULL_NAME):$(Build.BuildId) to tar..."
+        docker save $(IMAGE_FULL_NAME):$(Build.BuildId) -o $(Build.ArtifactStagingDirectory)/image.tar
+      displayName: 'Save Docker image as artifact'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Docker image artifact'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifact: 'docker-image'
+        publishLocation: 'pipeline'
+
+# ─────────────────────────
+# Stage 2: Push image to ACR (deployment job → environment → approvals)
+# ─────────────────────────
+- stage: Push
+  displayName: Push image to registry
+  dependsOn: Build
+  condition: succeeded()      # only push if build succeeded
+  jobs:
+  - deployment: push_image
+    displayName: Push Docker Image to registry
+    environment: $(ADO_ENVIRONMENT)          # 🔒 approvals/checks hit here
+    pool:
+      vmImage: 'ubuntu-24.04'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Docker image artifact'
+            inputs:
+              artifact: 'docker-image'
+              path: '$(Pipeline.Workspace)'
+
+          # Load image and tag "latest" locally
+          - script: |
+              echo "Loading image from artifact..."
+              docker load -i "$(Pipeline.Workspace)/docker-image/image.tar"
+
+              echo "Tagging image as latest..."
+              docker tag $(IMAGE_FULL_NAME):$(Build.BuildId) $(IMAGE_FULL_NAME):latest
+            displayName: 'Load Docker image and tag latest'
+
+          # Push both tags using Docker@1 tasks
+          - task: Docker@1
+            displayName: 'Push Docker Image (tag BuildId)'
+            inputs:
+              azureSubscriptionEndpoint: '$(SERVICE_CONNECTION)'
+              azureContainerRegistry: '$(CONTAINER_REGISTRY)'
+              imageName: '$(IMAGE_FULL_NAME):$(Build.BuildId)'
+              command: 'push'
+
+          - task: Docker@1
+            displayName: 'Push Docker Image (tag "latest")'
+            inputs:
+              azureSubscriptionEndpoint: '$(SERVICE_CONNECTION)'
+              azureContainerRegistry: '$(CONTAINER_REGISTRY)'
+              imageName: '$(IMAGE_FULL_NAME):latest'
+              command: 'push'

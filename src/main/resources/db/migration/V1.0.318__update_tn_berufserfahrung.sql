@@ -1,0 +1,2 @@
+ALTER TABLE tn_berufserfahrung ALTER COLUMN dauer TYPE DOUBLE PRECISION;
+ALTER TABLE tn_berufserfahrung_history ALTER COLUMN dauer TYPE DOUBLE PRECISION;

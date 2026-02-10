@@ -1,0 +1,5 @@
+{
+  "requestType": "favouriteDashboard",
+  "dashboardId": 123,
+  "token": "meinToken"
+}

@@ -1,0 +1,20 @@
+name: $(Build.Repository.Name)__Build_$(Build.BuildId)__$(Date:yyyy-MM-dd_HH.mm.ss)
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-24.04'
+
+steps:
+
+  - template: templates/install-java.yaml
+
+  - template: templates/cache-gradle.yaml
+    parameters:
+      agentOs: $(Agent.OS)
+
+  - template: templates/gradle-build.yaml
+    parameters:
+      testRunTitle: 'ibosng-backend - Build'
+
+  - template: templates/publish-code-coverage.yaml

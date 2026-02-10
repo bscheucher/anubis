@@ -1,0 +1,24 @@
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-24.04'
+
+steps:
+
+- template: templates/install-java.yaml
+
+- template: templates/cache-gradle.yaml
+  parameters:
+    agentOs: $(Agent.OS)
+
+- task: Gradle@3
+  displayName: 'Run Gradle Tests'
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
+    jdkArchitectureOption: 'x64'
+    tasks: 'clean test'
+    publishJUnitResults: true
+    testResultsFiles: '**/build/test-results/test/*.xml'
+    testRunTitle: 'ibosng-backend - Test'
