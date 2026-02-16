@@ -2,23 +2,22 @@ package com.ibosng.teilnehmerportal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibosng.BaseIntegrationTest;
+import com.ibosng.teilnehmerportal.exception.DocumentValidationException;
+import com.ibosng.teilnehmerportal.exception.NatifApiException;
 import com.ibosng.teilnehmerportal.service.TnDocumentUploadService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,73 +34,117 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
     @MockBean
     private TnDocumentUploadService documentService;
 
-    // --- /tn-document/upload tests ---
-
     @Test
-    void uploadFile_withFile_returnsExtractedDataFromExternalApi() throws Exception {
-        // Arrange
+    void uploadFile_withValidFile_returnsSuccessEvents() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "pdf-content".getBytes()
         );
 
         String mockExternalResponse = "{\"status\":\"success\",\"data\":{\"start\":\"2026-02-10\",\"end\":\"2026-02-17\"}}";
 
-        when(documentService.uploadDocument(any()))
-                .thenReturn(mockExternalResponse);
+        doAnswer(invocation -> {
+            SseEmitter emitter = invocation.getArgument(1);
 
-        // Act & Assert
+            emitter.send(SseEmitter.event()
+                    .name("success")
+                    .data(Map.of(
+                            "message", "Upload completed",
+                            "result", mockExternalResponse
+                    )));
+            return null;
+        }).when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(file)
                         .param("type", "absence")
                         .param("identifier", "12345"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mockExternalResponse));
+                .andExpect(content().contentType(MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
     }
 
     @Test
-    void uploadFile_emptyFile_returnsBadRequest() throws Exception {
-        // Arrange
+    void uploadFile_emptyFile_sendsErrorEventAndCompletes() throws Exception {
         MockMultipartFile emptyFile = new MockMultipartFile(
                 "file", "empty.pdf", MediaType.APPLICATION_PDF_VALUE, new byte[0]
         );
 
-        // Act & Assert
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(emptyFile)
                         .param("type", "absence")
                         .param("identifier", "12345"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("File must not be empty"));
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        verify(documentService, never()).uploadDocument(any(), any());
     }
 
     @Test
-    void uploadFile_externalApiError_returnsForwardedError() throws Exception {
-        // Arrange
+    void uploadFile_validationError_sendsErrorEvent() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes()
         );
 
-        // Create a WebClientResponseException with 401 status
-        WebClientResponseException unauthorizedException = WebClientResponseException.create(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                HttpHeaders.EMPTY,
-                "Unauthorized access".getBytes(StandardCharsets.UTF_8),
-                StandardCharsets.UTF_8
-        );
+        doThrow(new DocumentValidationException("File size exceeds 10MB limit"))
+                .when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
 
-        when(documentService.uploadDocument(any()))
-                .thenThrow(unauthorizedException);
-
-        // Act & Assert
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(file)
                         .param("type", "absence")
                         .param("identifier", "12345"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
     }
 
-    // --- /tn-document/confirm tests ---
+    @Test
+    void uploadFile_natifApiError_sendsErrorEvent() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes()
+        );
+
+        doThrow(new NatifApiException("Natif API returned error", 401, "Unauthorized access"))
+                .when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+
+        mockMvc.perform(multipart("/tn-document/upload")
+                        .file(file)
+                        .param("type", "absence")
+                        .param("identifier", "12345"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+    }
+
+    @Test
+    void uploadFile_unexpectedError_sendsErrorEvent() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes()
+        );
+
+        doThrow(new RuntimeException("Unexpected error"))
+                .when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+
+        mockMvc.perform(multipart("/tn-document/upload")
+                        .file(file)
+                        .param("type", "absence")
+                        .param("identifier", "12345"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+    }
 
     @Test
     void confirmData_returnsSubmittedData() throws Exception {
