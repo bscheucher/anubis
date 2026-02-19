@@ -2,7 +2,6 @@ package com.ibosng.teilnehmerportal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibosng.BaseIntegrationTest;
-import com.ibosng.teilnehmerportal.exception.DocumentValidationException;
 import com.ibosng.teilnehmerportal.exception.NatifApiException;
 import com.ibosng.teilnehmerportal.service.TnDocumentUploadService;
 import org.junit.jupiter.api.Test;
@@ -11,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc(addFilters = false)
+@TestPropertySource(properties = "features.tn-document-upload.enabled=true")
 public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
 
     @Autowired
@@ -43,7 +44,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
         String mockExternalResponse = "{\"status\":\"success\",\"data\":{\"start\":\"2026-02-10\",\"end\":\"2026-02-17\"}}";
 
         doAnswer(invocation -> {
-            SseEmitter emitter = invocation.getArgument(1);
+            SseEmitter emitter = invocation.getArgument(2);
 
             emitter.send(SseEmitter.event()
                     .name("success")
@@ -52,7 +53,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
                             "result", mockExternalResponse
                     )));
             return null;
-        }).when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+        }).when(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
 
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(file)
@@ -63,7 +64,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+        verify(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
     }
 
     @Test
@@ -76,32 +77,12 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
                         .file(emptyFile)
                         .param("type", "absence")
                         .param("identifier", "12345"))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        verify(documentService, never()).uploadDocument(any(), any());
-    }
-
-    @Test
-    void uploadFile_validationError_sendsErrorEvent() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "test.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes()
-        );
-
-        doThrow(new DocumentValidationException("File size exceeds 10MB limit"))
-                .when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
-
-        mockMvc.perform(multipart("/tn-document/upload")
-                        .file(file)
-                        .param("type", "absence")
-                        .param("identifier", "12345"))
-                .andExpect(status().isOk())
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+        verify(documentService, never()).uploadDocument(any(), any(), any());
     }
 
     @Test
@@ -111,7 +92,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
         );
 
         doThrow(new NatifApiException("Natif API returned error", 401, "Unauthorized access"))
-                .when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+                .when(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
 
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(file)
@@ -122,7 +103,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+        verify(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
     }
 
     @Test
@@ -132,7 +113,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
         );
 
         doThrow(new RuntimeException("Unexpected error"))
-                .when(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+                .when(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
 
         mockMvc.perform(multipart("/tn-document/upload")
                         .file(file)
@@ -143,7 +124,7 @@ public class TnAbsenceDocumentUploadControllerTest extends BaseIntegrationTest {
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        verify(documentService).uploadDocument(any(MockMultipartFile.class), any(SseEmitter.class));
+        verify(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
     }
 
     @Test

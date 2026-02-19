@@ -1,17 +1,14 @@
 package com.ibosng.teilnehmerportal.service;
 
-import com.ibosng.teilnehmerportal.exception.DocumentValidationException;
-import com.ibosng.teilnehmerportal.exception.NatifApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 import java.util.Map;
@@ -23,28 +20,23 @@ public class TnDocumentUploadService {
     private final WebClient webClient;
 
     public TnDocumentUploadService(
-            @Value("${tnDocumentNatifEndpoint}") String natifEndpoint,
-            @Value("${tnDocumentNatifApiKey}") String natifApiKey
+            @Value("${natifBaseEndpoint}") String natifEndpoint,
+            @Value("${natifApiKey}") String natifApiKey,
+            @Value("${natifProcessDefinitionKey}") String natifProcessDefinitionKey
     ) {
         this.webClient = WebClient.builder()
-                .baseUrl(natifEndpoint)
+                .baseUrl(natifEndpoint + natifProcessDefinitionKey)
                 .defaultHeader("Authorization", natifApiKey)
                 .build();
     }
 
-    public void uploadDocument(MultipartFile file, SseEmitter emitter)
-            throws IOException, NatifApiException, DocumentValidationException {
+    public void uploadDocument(byte[] fileBytes, String filename, SseEmitter emitter)
+            throws IOException {
 
-        log.info("Uploading document to Natif API: {}", file.getOriginalFilename());
-        validateFile(file);
+        log.info("Uploading document to Natif API: {}", filename);
 
-        // Read file into memory BEFORE reactive chain
-        byte[] fileBytes = file.getBytes();
-        String filename = file.getOriginalFilename();
-        String contentType = file.getContentType();
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        // Create a ByteArrayResource instead of using file.getResource()
         body.add("file", new ByteArrayResource(fileBytes) {
             @Override
             public String getFilename() {
@@ -81,7 +73,6 @@ public class TnDocumentUploadService {
                             emitter.completeWithError(e);
                         }
                     })
-                    // ... rest of error handlers
                     .subscribe();
 
         } catch (IOException e) {
@@ -90,19 +81,5 @@ public class TnDocumentUploadService {
         }
     }
 
-    private void validateFile(MultipartFile file) throws DocumentValidationException {
-        if (file.getSize() > 10_000_000) {
-            throw new DocumentValidationException("File size exceeds 10MB limit");
-        }
 
-        String contentType = file.getContentType();
-        boolean isImage = contentType != null && contentType.startsWith("image/");
-        boolean isPdf = "application/pdf".equals(contentType);
-
-        if (!isImage && !isPdf) {
-            throw new DocumentValidationException(
-                    "Invalid file type. Only images and PDF files are allowed."
-            );
-        }
-    }
 }

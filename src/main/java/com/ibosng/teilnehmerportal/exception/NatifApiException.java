@@ -3,7 +3,7 @@ package com.ibosng.teilnehmerportal.exception;
 import lombok.Getter;
 
 @Getter
-public class NatifApiException extends Exception {
+public class NatifApiException extends RuntimeException {
     private final int statusCode;
     private final String responseBody;
 
