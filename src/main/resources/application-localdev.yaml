@@ -1,0 +1,68 @@
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID} --- [%15.15t, %X{user_id}] %-40.40logger{39}  : %m%n%wEx"
+  level:
+    com.ibosng._config.ResponseLogger: DEBUG
+
+database:
+  ibosngDbUrl: jdbc:postgresql://localhost:5432/ibosng
+  ibosngDbUsername: postgres
+  ibosngDbPassword: mySecret
+  lhrDbUrl: jdbc:dummy://dummy:1234/dummy
+  lhrDbUsername: dummy
+  lhrDbPassword: dummy
+
+mariaDBUrl: jdbc:mariadb://localhost:3306/ibos
+mariaDBUsername: ibos
+mariaDBPassword: ibos
+
+redisSslEnabled: false
+azureRedisHost: 127.0.0.1
+azureRedisPassword:
+azureRedisPort: 6379
+
+ssoClientId: ${SSO_CLIENT_ID:dummy-client-id-12345}
+ssoClientSecret: ${SSO_CLIENT_SECRET:dummy-secret-67890}
+ssoTenantId: ${SSO_TENANT_ID:dummy-tenant-id-abcde}
+
+jobs:
+  legacySchedulersEnabled: ${LEGACY_SCHEDULERS_ENABLED:false}
+  lhrOutboxSchedulerEnabled: ${LHR_OUTBOX_SCHEDULER_ENABLED:false}
+  lhrOutboxSchedulerDelayInMilliseconds: ${LHR_OUTBOX_SCHEDULER_DELAY_IN_MILLISECONDS:1000}
+
+enableLhrIntegrationRework: true
+
+useTestMoxis: ${USE_TEST_MOXIS:false}
+moxisUsername: ${MOXIS_USERNAME:irrelevant}
+moxisPassword: ${MOXIS_PASSWORD:irrelevant}
+moxisUrl: ${MOXIS_URL:irrelevant}
+
+server:
+  max-http-request-header-size: 100KB
+
+storageAccountName: devstoreaccount1
+storageAccountKey: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+storageEndpoint: http://127.0.0.1:10000/devstoreaccount1
+storageContainerJasperReports: jasper-reports
+
+oneDriveSource: source
+oneDriveProcessing: processing
+oneDriveSuccessful: successful
+oneDriveError: error
+oneDriveBerufe: berufe
+
+useLhrApi: ${USE_LHR_API:false}
+lhrUsername: ${LHR_USERNAME:irrelevant}
+lhrPassword: ${LHR_PASSWORD:irrelevant}
+lhrUrl: https://aspire.lohn.at/api
+lhrTestFirmaKZ: IA
+lhrTestFirmaNr: 901
+
+localStorageRoot: .local-storage
+fileShareTemp: temp
+useSharePointLocally: ${USE_SHAREPOINT_LOCALLY:false} # true = use real sharepoint service impl
+fileSharePersonalunterlagen: personalunterlagen
+
+
+cors:
+  allowedOrigins: http://localhost:3000

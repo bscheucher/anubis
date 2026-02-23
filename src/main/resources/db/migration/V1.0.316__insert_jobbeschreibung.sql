@@ -1,0 +1,1 @@
+INSERT INTO jobbeschreibung (name, created_on, created_by) VALUES ('Kinderbeaufsichtigung', current_timestamp, current_user);

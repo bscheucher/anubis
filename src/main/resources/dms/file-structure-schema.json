@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/tn-file-structure.schema.json",
+  "type": "object",
+  "required": [
+    "baseFolder",
+    "structure"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "baseFolder": {
+      "type": "string",
+      "minLength": 1
+    },
+    "structure": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/folder"
+      }
+    }
+  },
+  "$defs": {
+    "folder": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "permissions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/permissionRule"
+          }
+        },
+        "subfolderPermissions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/permissionRule"
+          }
+        },
+        "subfolders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/folder"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/field"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "date",
+            "integer"
+          ]
+        }
+      }
+    },
+    "permissionRule": {
+      "type": "object",
+      "required": [
+        "access",
+        "groups"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "access": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/access"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/group"
+          }
+        }
+      }
+    },
+    "access": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write"
+      ]
+    },
+    "group": {
+      "type": "string",
+      "enum": [
+        "TN",
+        "TR",
+        "Coach",
+        "AMS",
+        "Admin"
+      ]
+    }
+  }
+}

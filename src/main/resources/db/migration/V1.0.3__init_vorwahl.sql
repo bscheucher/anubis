@@ -1,0 +1,18 @@
+insert into vorwahl (vorwahl, land_vorwahl, created_on, created_by, changed_by)
+values  (650, 156, current_date, current_user, null),
+        (655, 156, current_date, current_user, null),
+        (660, 156, current_date, current_user, null),
+        (661, 156, current_date, current_user, null),
+        (663, 156, current_date, current_user, null),
+        (664, 156, current_date, current_user, null),
+        (665, 156, current_date, current_user, null),
+        (667, 156, current_date, current_user, null),
+        (670, 156, current_date, current_user, null),
+        (676, 156, current_date, current_user, null),
+        (677, 156, current_date, current_user, null),
+        (678, 156, current_date, current_user, null),
+        (680, 156, current_date, current_user, null),
+        (681, 156, current_date, current_user, null),
+        (688, 156, current_date, current_user, null),
+        (690, 156, current_date, current_user, null),
+        (699, 156, current_date, current_user, null);

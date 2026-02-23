@@ -1,0 +1,18 @@
+{
+  "requestType": "saveDashboard",
+  "dashboardId": 51,
+  "dashboardName": "testingSaveDashboard",
+  "token": "3fdsf21",
+  "widgets": [
+    {
+      "id": 102,
+      "positionX": 0,
+      "positionY": 0
+    },
+    {
+      "id": 103,
+      "positionX": 100,
+      "positionY": 200
+    }
+  ]
+}

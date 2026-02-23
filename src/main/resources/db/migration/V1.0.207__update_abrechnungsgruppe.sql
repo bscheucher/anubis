@@ -1,0 +1,1 @@
+update abrechnungsgruppe set bezeichnung = 'TN OÖ' where abbreviation ='T_OOE';

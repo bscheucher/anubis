@@ -1,0 +1,85 @@
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID} --- [%15.15t, %X{user_id}] %-40.40logger{39}  : %m%n%wEx"
+  level:
+    root: info
+    org:
+      springframework: info
+      springframework.web: info
+      springframework.security: info
+      hibernate: error
+      flywaydb: info
+      flywaydb.core: info
+
+    net:
+      sf:
+        jasperreports: debug
+        jasperreports.engine.fonts: debug
+    com:
+      ibosng:
+        gatewayservice: info
+        dbservice: info
+        dbibosservice: info
+        workflowservice: info
+        reportservice: info
+        microsoftgraphservice: info
+        validationservice: info
+        moxisservice: info
+        natifservice: info
+        lhrservice: info
+        usercreationservice: info
+      microsoft: info
+spring:
+  banner:
+    location: classpath:banner.txt
+  flyway:
+    enabled: true
+    locations: classpath:/db/migration
+  data.redis.repositories.enabled: false
+
+server:
+  max-http-request-header-size:
+
+database:
+  ibosngDbUrl:
+  ibosngDbUsername:
+  ibosngDbPassword:
+  lhrDbUrl:
+  lhrDbUsername:
+  lhrDbPassword:
+
+mariaDBUrl:
+mariaDBUsername:
+mariaDBPassword:
+
+redisSslEnabled:
+azureRedisHost:
+azureRedisPassword:
+azureRedisPort:
+
+ssoClientId:
+ssoClientSecret:
+ssoTenantId:
+
+mailScope: https://graph.microsoft.com/.default
+mailClientId: dummy-client-id-12345
+mailClientSecret: dummy-secret-67890
+mailTenantId: dummy-tenant-id-abcde
+
+oneDriveClientId: dummy-client-id-12345
+oneDriveClientSecret: dummy-secret-67890
+oneDriveTenantId: dummy-tenant-id-abcde
+
+lhrUsername: dummy-username
+lhrPassword: dummy-password
+lhrUrl: https://dummy.lhr.at/api/v1/
+
+storageAccountName: dummy-account-name
+storageAccountKey: dummy-account-key
+
+moxisUsername:
+moxisPassword:
+moxisUrl:
+
+azureOpenAIKey: dummy-key
+azureOpenAIEndPoint: https://dummy.azureopenai.at/api/v1/

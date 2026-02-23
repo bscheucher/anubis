@@ -1,0 +1,255 @@
+baseFolder: "TEST/test_MA_personalakt"
+
+# structure defined inside the "Mitarbeiterdokumente" library
+structure:
+  # folder name pattern: "MITARBEITERPNR_VORNAME_NACHMNAME" - will be replaced with the actual PNR and name of the employee
+  - name: MITARBEITERPNR_VORNAME_NACHMNAME
+    subfolders:
+      - name: Stammdaten
+        subfolders:
+          - name: Urkunden
+            fields: # definition of additional fields on the folder level - supported by SharePoint
+              - name: Name
+                type: string
+              - name: Staatsbürgerschaft
+                type: string
+
+          - name: Ausweise & Karten
+            fields:
+              - name: Name
+                type: string
+
+          - name: Aufenthalt- & Beschäftigungstitel
+            fields:
+              - name: Ablaufdatum
+                type: date
+
+          - name: Behindertenbescheid
+            fields:
+              - name: Name
+                type: string
+
+          - name: Mitversicherte Kinder
+
+      - name: Sozialversicherungsdaten, ELDA
+
+      - name: Onboarding
+        subfolders:
+          - name: Bewerbungsunterlagen
+            fields:
+              - name: Name
+                type: string
+              - name: Datum
+                type: date
+
+          - name: Lebenslauf
+            fields:
+              - name: Name
+                type: string
+              - name: Datum
+                type: date
+              - name: Stichwortsuche Titel # TODO clarify
+                type: string
+
+          - name: Strafregisterbescheinigung
+            fields:
+              - name: Ausstellungsdatum
+                type: date
+
+          - name: Ausbildungsnachweise, Zeugnisse, Abschluss
+            fields:
+              - name: Stichwortsuche Titel # TODO clarify
+                type: string
+              - name: Von
+                type: date
+              - name: Bis
+                type: date
+              - name: UE
+                type: integer
+              - name: Stunden
+                type: integer
+              - name: ETCs
+                type: integer
+              - name: Ausstellungsdatum
+                type: date
+
+          - name: Weiterbildungen & Zusatzausbildungen
+            fields:
+              - name: Stichwortsuche Titel # TODO clarify
+                type: string
+              - name: Von
+                type: date
+              - name: Bis
+                type: date
+              - name: UE
+                type: integer
+              - name: Stunden
+                type: integer
+              - name: Tage
+                type: integer
+              - name: Ausstellungsdatum
+                type: date
+              - name: Ablaufdatum
+                type: date
+
+          - name: Sprachnachweis
+            fields:
+              - name: Stichwortsuche Sprachniveau (C1, B2, B1, A2, A1) # TODO clarify
+                type: string
+
+          - name: Beschäftigungs- & Stundennachweise
+            fields:
+              - name: Von
+                type: date
+              - name: Bis
+                type: date
+              - name: UE
+                type: integer
+              - name: Tage
+                type: integer
+              - name: Ausstellungsdatum
+                type: date
+              - name: Unternehmen & Projekt # TODO clarify
+                type: string
+
+          - name: Erfahrungsnachweise
+            fields:
+              - name: Stichwortsuche # TODO clarify
+                type: string
+
+      - name: Vertrag laufendes DV
+        subfolders:
+          - name: Dienstvertrag und Zusätze
+            fields:
+              - name: Name
+                type: string
+
+          - name: Stellenbeschreibung
+
+          - name: Sondervereinbarungen
+            fields:
+              - name: Stichwortsuche # TODO clarify
+                type: string
+
+          - name: Einwilligungen und Erklärungen
+            fields:
+              - name: Unternehmen (ibis oder AMS) # TODO clarify
+                type: string
+
+          - name: Überlassungsvereinbarungen
+          - name: Diverse Vereinbarungen
+          - name: Vorschussvereinbarungen & Ratenzahlungen
+
+          - name: Trainerprofile
+            fields:
+              - name: Name
+                type: string
+
+          - name: Einwillungungserklärung Datenspeicherung
+            fields:
+              - name: Name
+                type: string
+
+      - name: Abrechnungsrelevante Daten
+        subfolders:
+          - name: Pendlerpauschale, Pendlereuro - Anträge
+          - name: Alleinverdiener, Alleinerhalter, Familienbonus - Anträge
+          - name: Freibetragsbescheide
+          - name: Zukunftssicherung
+          - name: div. Schriftverkehr
+
+      - name: Exekutionen
+        subfolders:
+          - name: Vormerkungen
+          - name: Unterhaltsberechtigte für Exekutionen
+          - name: laufende Exekutionen
+
+      - name: Abwesenheit lfd. Dienstverhältnis
+        subfolders:
+          - name: Krankenstandsbestätigungen
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff
+          - name: Zeitbestätigungen
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff
+          - name: Pflegefreistellung
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff
+
+      - name: Lohn- Gehalts- Arbeitsbestätigungen & sonstiges
+        subfolders:
+          - name: Grenzgängerbestätigung
+          - name: Lohn und Gehaltsbestätigungen für Behörden
+          - name: Abrechnungen Korrekt, Bestätigungen
+
+      - name: Mitarbeiter_innengespräche
+        subfolders:
+          - name: Zielvereinbarungen
+          - name: Onboarding Abschlussgespräch
+          - name: lfd Feedbacks und Gespräche
+          - name: Jährliches Mitarbeitergespräch
+          - name: Dienstzeugnis
+          - name: Verwarnungen, Abmahnungen
+
+      - name: Beendigung DV
+        subfolders:
+          - name: Auflösungsdokumentation
+            fields:
+              - name: Name
+                type: string
+              - name: Zeitraum # TODO clarify
+                type: string
+
+          - name: Rückgabenachweis Firmeneigentum
+
+          - name: Dienstzeugnis Ende
+            fields:
+              - name: Name
+                type: string
+              - name: Zeitraum # TODO clarify
+                type: string
+
+          - name: Stundenbestätigungen
+            fields:
+              - name: Name
+                type: string
+              - name: Zeitraum # TODO clarify
+                type: string
+
+      - name: Mutterschutz, Karenzvereinbarung, Elternteilzeit
+        subfolders:
+          - name: Unterlagen zu Mutterschutz und Elternzeit
+          - name: Dokumente & Vereinbarungen
+          - name: Sonstiges
+
+      - name: Gehaltsnachweise
+        subfolders:
+          - name: Nettozettel
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff
+          - name: L16
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff
+
+      - name: Zeitnachweise
+        subfolders:
+          - name: Leistungserfassung
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff
+          - name: Zeitnachweise
+            subfolders:
+              - name: "2024"
+              - name: "2025"
+              - name: 2026ff

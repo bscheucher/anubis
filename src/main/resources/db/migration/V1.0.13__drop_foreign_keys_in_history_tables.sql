@@ -1,0 +1,13 @@
+ALTER TABLE bankverbindung_history DROP CONSTRAINT bankverbindung_history_auftraggeber_bank_fkey;
+ALTER TABLE bankverbindung_history DROP CONSTRAINT bankverbindung_history_land_fkey;
+
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_abteilung_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_adresse_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_bankverbindung_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_beruf_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_geburtsort_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_gehaltsinfo_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_religion_fkey;
+ALTER TABLE dienstnehmer_history DROP CONSTRAINT dienstnehmer_history_telefon_fkey;
+
+ALTER TABLE erreichbarkeit_history DROP CONSTRAINT erreichbarkeit_history_dienstnehmer_fkey;

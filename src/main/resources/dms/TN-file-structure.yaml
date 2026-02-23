@@ -1,0 +1,121 @@
+baseFolder: "TEST/test_TN_personalakt"
+structure:
+  - name: TEILNEHNMERPNR_VORNAME_NACHMNAME
+    permissions:
+      - access:
+          - read
+        groups:
+          - TN
+          - TR
+          - Coach
+          - AMS
+      - access:
+          - read
+          - write
+        groups:
+          - Admin
+    subfolderPermissions:
+      - access:
+          - read
+        groups:
+          - TN
+          - TR
+          - Coach
+          - AMS
+      - access:
+          - read
+          - write
+        groups:
+          - Admin
+    subfolders:
+      - name: Berichte - intern
+        subfolderPermissions:
+          - access:
+              - read
+            groups:
+              - TN
+          - access:
+              - read
+              - write
+            groups:
+              - TR
+              - Coach
+              - Admin
+        subfolders:
+          - name: Terminplan
+          - name: Coachingprotokolle
+
+      - name: Berichte - extern
+        subfolderPermissions:
+          - access:
+              - read
+              - write
+            groups:
+              - TR
+              - Coach
+              - Admin
+          - access:
+              - read
+            groups:
+              - AMS
+        subfolders:
+          - name: Karriereplan
+          - name: Perspektivenplan
+      - name: Bewerbungsdaten
+        subfolderPermissions:
+          - access:
+              - read
+              - write
+            groups:
+              - TN
+              - TR
+              - Coach
+              - Admin
+          - access:
+              - read
+            groups:
+              - AMS
+        subfolders:
+          - name: Bewerbungsunterlagen
+          - name: Lebenslauf
+          - name: Inserat
+      - name: Verlaufsdokumente
+        subfolderPermissions:
+          - access:
+              - read
+            groups:
+              - TN
+              - TR
+              - Coach
+              - Admin
+              - AMS
+        subfolders:
+          - name: Kompetenzenprofil
+      - name: Abwesenheitsdokumente
+        subfolderPermissions:
+          - access:
+              - read
+              - write
+            groups:
+              - TN
+          - access:
+              - read
+            groups:
+              - TR
+              - Admin
+        subfolders:
+          - name: Krankenstandsbestätigungen
+          - name: Pflegefreistellung
+      - name: Gehaltsnachweise
+        subfolderPermissions:
+          - access:
+              - read
+              - write
+            groups:
+              - TN
+          - access:
+              - read
+            groups:
+              - Admin
+        subfolders:
+          - name: Lohnzettel

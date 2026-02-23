@@ -1,0 +1,46 @@
+testcontainers:
+  postgresql:
+    image: postgres:16.9
+    username: postgres
+    password: postgres
+    database: ibosng
+    applyDbDump: ${APPLY_POSTGRESQL_DUMP:false}
+    dbDumpPath: ${POSTGRESQL_DUMP_PATH:""}
+  mariadb:
+    image: mariadb:11.4
+    username: ibos
+    password: ibos
+    database: ibos
+    applyDbDump: ${APPLY_MARIADB_DUMP:false}
+    dbDumpPath: ${MARIADB_DUMP_PATH:""}
+
+  redis:
+    image: redis:6.0
+    port: 6379
+    host: 127.0.0.1
+    password:
+
+jobs:
+  legacySchedulersEnabled: true #'true' won't active jobs since Spring Scheduling is not enabled in test; but needed so that the Bean containing the jobs is registered
+  lhrOutboxSchedulerEnabled: true  #'true' won't active  jobs since Spring Scheduling is not enabled in test; but needed so that the Bean containing the jobs (which is accessed in tests) is registered
+  lhrOutboxSchedulerDelayInMilliseconds: 1000 # irrelevant since Spring Scheduling is not enabled in test
+
+enableLhrIntegrationRework: true
+
+logging:
+  level:
+    org.testcontainers: debug
+
+storageAccountName: devstoreaccount1
+storageAccountKey: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+storageEndpoint: http://127.0.0.1:10000/devstoreaccount1
+localStorageRoot: .local-storage
+fileShareTemp: temp
+fileSharePersonalunterlagen: personalunterlagen
+storageContainerJasperReports: jasper-reports
+
+cors:
+  allowedOrigins: http://localhost:3000
+
+isProduction: true
+
