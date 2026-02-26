@@ -1,6 +1,7 @@
 package com.ibosng.teilnehmerportal.controller;
 
 import com.ibosng.teilnehmerportal.dto.AbwesenheitEntryDto;
+import com.ibosng.teilnehmerportal.dto.AbwesenheitListResponse;
 import com.ibosng.teilnehmerportal.dto.TeilnehmerAbwesenheitsbestaetigungDto;
 import com.ibosng.teilnehmerportal.exception.NatifApiException;
 import com.ibosng.teilnehmerportal.mapper.TeilnehmerAbwesenheitsbestaetigungMapper;
@@ -148,7 +149,7 @@ public class TeilnehmerAbwesenheitsbestaetigungController {
     }
 
     @GetMapping(value = "/abwesenheiten")
-    public ResponseEntity<List<AbwesenheitEntryDto>> getAbwesenheiten(
+    public ResponseEntity<AbwesenheitListResponse> getAbwesenheiten(
             @RequestParam String azureId
     ) {
         log.info("Fetching abwesenheiten for azureId: {}", azureId);
@@ -169,7 +170,8 @@ public class TeilnehmerAbwesenheitsbestaetigungController {
                 new AbwesenheitEntryDto(14, "Andreas", "Brandstätter", "4567221191", "dummy-files/Steiner.pdf", "2025-08-04", "2025-08-08", "2025-08-01T12:44:05"),
                 new AbwesenheitEntryDto(15, "Sabine", "Leitner", "5678150688", "dummy-files/Steiner.pdf", "2025-09-01", "2025-09-05", "2025-08-29T10:05:30")
         );
-        return ResponseEntity.ok(dummyData);
+        var pagination = new AbwesenheitListResponse.Pagination(dummyData.size(), dummyData.size(), 1);
+        return ResponseEntity.ok(new AbwesenheitListResponse(true, dummyData, pagination));
     }
 
     private void sendErrorAndComplete(SseEmitter emitter, String message, String type,

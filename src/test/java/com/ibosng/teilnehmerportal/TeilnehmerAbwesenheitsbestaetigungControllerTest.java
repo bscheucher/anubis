@@ -18,6 +18,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -125,6 +126,21 @@ public class TeilnehmerAbwesenheitsbestaetigungControllerTest extends BaseIntegr
                 .andReturn();
 
         verify(documentService).uploadDocument(any(byte[].class), any(String.class), any(SseEmitter.class));
+    }
+
+    // --- /tn-document/abwesenheiten tests ---
+
+    @Test
+    void getAbwesenheiten_returnsStandardContract() throws Exception {
+        mockMvc.perform(get("/tn-document/abwesenheiten")
+                        .param("azureId", "test-azure-id"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.pagination").exists())
+                .andExpect(jsonPath("$.pagination.totalCount").value(15))
+                .andExpect(jsonPath("$.pagination.pageSize").value(15))
+                .andExpect(jsonPath("$.pagination.page").value(1));
     }
 
     // --- /tn-document/confirm tests ---
